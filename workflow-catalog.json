@@ -1,0 +1,689 @@
+{
+  "checked": "2026-10-28",
+  "sources": {
+    "jotform": {
+      "status": "Tool-backed",
+      "tools": [
+        "search",
+        "list_submissions",
+        "fetch",
+        "analyze_submissions"
+      ],
+      "evidence": "Connected Jotform tool schemas",
+      "url": "https://www.jotform.com/",
+      "plan": "Identify the intended Jotform form before reading submissions. If a form name or URL is not provided, first ask \u201cWhich Jotform form would you like to use?\u201d Resolve the name or URL to a numeric form ID using search/fetch; if multiple forms match, ask the user to choose. Then confirm the particular submission, person, or response date range. Do not default to the latest or an \u201capproved\u201d submission. Resolve numeric form IDs before list_submissions or analyze_submissions. Use list_submissions/fetch for individual records and analyze_submissions for patterns across a chosen response set."
+    },
+    "gmail": {
+      "status": "Tool-backed",
+      "tools": [
+        "search_emails",
+        "read_email",
+        "read_email_thread"
+      ],
+      "evidence": "Connected Gmail tool schemas",
+      "url": "https://developers.google.com/workspace/gmail/api/guides",
+      "plan": "Find the requested message or thread with search_emails, then read_email or read_email_thread. Resolve the external person, excluding the signed-in user, aliases, forwarded headers, quoted senders, and unrelated recipients. Use verified message headers and the relevant message text. Do not send or modify Gmail messages."
+    },
+    "wix": {
+      "status": "Tool-backed",
+      "tools": [
+        "ListWixSites",
+        "GetSiteContext",
+        "SearchWixRESTDocumentation",
+        "SearchWixAPISpec",
+        "ExecuteWixAPI"
+      ],
+      "evidence": "Connected Wix MCP tools and read-forms-and-submissions recipe",
+      "url": "https://dev.wix.com/docs/api-reference/crm/forms/form-submissions/query-submissions-by-namespace",
+      "plan": "Use WixREADME once if not already loaded. Resolve the intended site and installed apps with ListWixSites / GetSiteContext. Discover and read the exact method documentation, inspect its schema, then make read-only calls through ExecuteWixAPI. For Wix Forms use form-schema-service/v4/forms and form-submission-service/v4/submissions/namespace/query, filtering namespace wix.form_app.form and the resolved formId. Get the form schema to map answer target keys to readable labels. Filter answer values locally after retrieving approved bounded results; do not invent answer-field API filters."
+    },
+    "calendly": {
+      "status": "Documented tools",
+      "tools": [
+        "event_types-list_event_types",
+        "event_types-get_event_type",
+        "meetings-list_events",
+        "meetings-get_event",
+        "meetings-list_event_invitees",
+        "meetings-get_event_invitee"
+      ],
+      "evidence": "Calendly official supported MCP tools; connector not connected in build session",
+      "url": "https://developer.calendly.com/docs/mcp/supported-tools",
+      "plan": "Use the documented Calendly MCP reads to resolve the selected event type, events, and invitees. Ask for the event type or link and booking date range/time zone when unspecified. Paginate the chosen scope and read actual invitee questionnaire answers. Do not infer attendance, meeting transcripts, completed-meeting outcomes, or marketing consent from a booking. This connector was declined in the build session, so its published tool catalog supports the template; execution still requires a connected account with the necessary reads."
+    },
+    "shopify": {
+      "status": "Source verification needed",
+      "tools": [
+        "Discover authorized Shopify merchant reads, or verify synced ecommerce data",
+        "list-all-orders / get-order / list-products-for-order (ActiveCampaign, if synced)",
+        "Contact-level campaign clicks (verify availability for the selected campaign)"
+      ],
+      "evidence": "Shopify merchant access not connected; ActiveCampaign ecommerce read schemas available; synced data and click coverage unverified",
+      "url": "https://help.activecampaign.com/hc/en-us/articles/360012461919-Get-started-with-the-ActiveCampaign-Shopify-integration",
+      "plan": "Confirm the Shopify store, bounded date range, product/variant IDs and intended ActiveCampaign account. Verify authorized merchant reads, or the coverage and freshness of synced ActiveCampaign ecommerce data; ask before substituting an export. Buyer-scoped Order MCP and developer documentation access do not establish store-wide history. Follow pagination, disclose incomplete history, exclude canceled/refunded orders, and preserve opt-outs. A one-time read does not configure an ongoing purchase trigger."
+    },
+    "clay": {
+      "status": "Tool-backed",
+      "tools": [
+        "search_contacts_by_name",
+        "search_contacts",
+        "query_objects",
+        "add_contact_data_points",
+        "get_task_context"
+      ],
+      "evidence": "Connected Clay tool schemas",
+      "url": "https://www.clay.com/",
+      "plan": "Use the specified Clay tool path. Public people searches are not the user's CRM or arbitrary table access. search_contacts requires actual company identifiers and a valid Search DSL query. Use returned taskId and entityIds, then get_task_context for actual enrichment values and statuses. Check existing enrichment before adding data points. Ask before spending credits or running new enrichment. Never fabricate emails or treat prospecting results as marketing consent. A pasted table URL alone is not proof of table access."
+    },
+    "forms": {
+      "status": "Via Google Sheets",
+      "tools": [
+        "get_spreadsheet_metadata",
+        "get_spreadsheet_range",
+        "search_spreadsheet_rows"
+      ],
+      "evidence": "Connected Google Sheets tools; no direct Google Forms MCP verified",
+      "url": "https://support.google.com/docs/answer/2917686",
+      "plan": "No direct Google Forms MCP tools are verified here. Ask for the linked response Sheet URL, then inspect its headers and read a bounded response range with the connected Google Sheets tools. Match the actual email question and response timestamp. A form URL alone does not provide its responses. If there is no linked accessible Sheet, ask the user to explicitly choose an export or pasted response before continuing."
+    },
+    "canva": {
+      "status": "Export/upload may be needed",
+      "tools": [
+        "search_designs",
+        "get_design",
+        "get_design_pages",
+        "get_design_content"
+      ],
+      "documentedExportTools": [
+        "get-export-formats",
+        "export-design"
+      ],
+      "evidence": "Canva design discovery and rich-text reads are available; export tools are documented but not exposed in this session; no direct ActiveCampaign file-upload tool verified",
+      "url": "https://www.canva.dev/docs/apps/mcp/tools/export-design/",
+      "plan": "Identify the actual Canva design and selected pages/assets. Read visible text via the connected Canva tools. Verify export support before trying to export. If export or destination file upload is unavailable, request the exported file and guide an approved manual upload. Verify durable recipient-accessible image/file URLs; never use signed expiring export URLs or preview thumbnails as permanent campaign assets. Complete email HTML can be passed to import_campaign_design; repurposed source content uses campaign generation."
+    }
+  },
+  "workflows": {
+    "jotform": [
+      {
+        "id": "jotform-contact",
+        "title": "Form submission \u2192 create or update contact",
+        "action": "upsert",
+        "goal": "Create or update an ActiveCampaign contact from a submission to my chosen Jotform form, including custom fields for selected answers.",
+        "description": "Bring submitted contact details into ActiveCampaign without duplicates.",
+        "why": "Someone has already shared useful information about themselves. This workflow puts those details into ActiveCampaign, creating missing custom fields so the information has a place to live. It keeps existing contacts current, avoids duplicates, and gives your team the context to make follow-up more relevant.",
+        "instructions": "Identify the form and selected submission first. Match email, preview the standard/custom-field mapping, create approved missing individual fields with the right types/options, and create or update the contact. Preserve stored values when source answers are blank.",
+        "sourceTools": [
+          "search",
+          "list_submissions",
+          "fetch",
+          "analyze_submissions"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "jotform-deal",
+        "title": "Demo or quote request \u2192 sales opportunity",
+        "action": "deal",
+        "goal": "Confirm that a submission to my chosen Jotform form is a demo or quote request, then create or update the contact and create a sales opportunity in ActiveCampaign.",
+        "description": "Turn a confirmed sales request into an owned opportunity.",
+        "why": "A demo or quote request signals that someone wants to take the next step. This workflow turns that request into an opportunity with an owner and a clear place in your sales process. It helps the team see who needs a response and track the request through to an outcome.",
+        "instructions": "Confirm demo or quote intent using the form purpose and actual submitted answers before creating resources. Create or update the contact and approved missing fields. Resolve pipeline, stage, and owner; create an approved missing pipeline first and then an approved missing stage. Preview and approve the deal, create it once, and verify the outcome.",
+        "sourceTools": [
+          "search",
+          "list_submissions",
+          "fetch",
+          "analyze_submissions"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "jotform-education",
+        "title": "Recurring survey questions \u2192 educational campaign",
+        "action": "campaign",
+        "goal": "Analyze a chosen set of Jotform responses for recurring questions and generate an educational email campaign for review in ActiveCampaign.",
+        "description": "Turn repeated customer questions into useful email content.",
+        "why": "Repeated questions reveal where customers need more help. This workflow turns those patterns into useful email content, helping your team address common concerns at scale. It also gives marketers a concrete starting point for campaigns grounded in what customers are actually asking.",
+        "instructions": "Identify the form and response scope or date range, analyze all returned chunks for recurring questions, confirm the topic and intended audience, use verified source information and omit respondents\u2019 identifying details, then generate one unsent campaign for review using the required approved images/template and brand-kit path. Verify the saved result; never send or schedule it.",
+        "sourceTools": [
+          "search",
+          "list_submissions",
+          "fetch",
+          "analyze_submissions"
+        ],
+        "status": "Tool-backed"
+      }
+    ],
+    "shopify": [
+      {
+        "id": "shopify-education",
+        "title": "First purchase \u2192 product education series",
+        "action": "series",
+        "focus": "education",
+        "goal": "Use a verified first Shopify purchase to create a product education email series and draft its delivery automation in ActiveCampaign.",
+        "description": "Help new customers get value from the product they actually bought.",
+        "why": "The first purchase is the start of the customer relationship. Useful setup, care, and usage emails help customers get value from their purchase and give them a reason to keep engaging with your brand.",
+        "data": "Selected store, product, purchase cohort and history coverage, plus approved setup, care, or usage resources.",
+        "instructions": "Verify the first completed purchase across available prior history, not just the selected date window. If history is incomplete, label first-purchase status unknown and ask before proceeding. Confirm product-specific guidance and delivery timing. Design entry, duplicate-entry prevention and stop rules; verify a real future purchase trigger separately.",
+        "sourceTools": [
+          "Discover authorized Shopify merchant reads, or verify synced ecommerce data",
+          "list-all-orders / get-order / list-products-for-order (ActiveCampaign, if synced)",
+          "Contact-level campaign clicks (verify availability for the selected campaign)"
+        ],
+        "status": "Source verification needed"
+      },
+      {
+        "id": "shopify-complement",
+        "title": "Products bought together \u2192 complete-your-setup campaign",
+        "action": "campaign",
+        "focus": "complement",
+        "goal": "Use actual Shopify order history to identify complementary products and create an ActiveCampaign campaign for customers who have not bought the suggested item.",
+        "description": "Recommend a useful next product using real purchase patterns.",
+        "why": "A relevant recommendation is more helpful than a generic promotion. Actual product combinations can reveal useful additions to a customer\u2019s purchase, while excluding items they already bought keeps the message relevant.",
+        "data": "Completed-order line items in a chosen date range, product and variant IDs, customer purchase history, and approved current product details.",
+        "instructions": "Use actual completed-order line items to find product pairs. Report the analyzed window, distinct order counts and coverage; small samples are suggestions, not proven affinities. Confirm complementarity, variant compatibility and current availability with the merchant. Exclude prior buyers of the recommended item, canceled/refunded orders and unresolved histories.",
+        "sourceTools": [
+          "Discover authorized Shopify merchant reads, or verify synced ecommerce data",
+          "list-all-orders / get-order / list-products-for-order (ActiveCampaign, if synced)",
+          "Contact-level campaign clicks (verify availability for the selected campaign)"
+        ],
+        "status": "Source verification needed"
+      },
+      {
+        "id": "shopify-launch",
+        "title": "Product launch \u2192 audience based on past purchases",
+        "action": "campaign",
+        "focus": "launch",
+        "goal": "Match a new Shopify product to relevant past purchases and create a targeted ActiveCampaign launch campaign.",
+        "description": "Explain a new product\u2019s value to the customers most likely to find it useful.",
+        "why": "Past purchases give a launch message a useful starting point. Showing how the new product relates to something a customer already owns makes the announcement more specific and helps you avoid sending every launch to everyone.",
+        "data": "New product or variant, approved launch date and claims, related purchase criteria, and customer order history.",
+        "instructions": "Confirm the new product/variant, launch date, approved benefits and CTA. Ask the merchant to approve which prior products make a customer relevant; purchase affinity alone is not verified compatibility. Match actual prior purchases, exclude customers who already bought the new item, and verify current availability. Do not invent launch dates, offers or product claims.",
+        "sourceTools": [
+          "Discover authorized Shopify merchant reads, or verify synced ecommerce data",
+          "list-all-orders / get-order / list-products-for-order (ActiveCampaign, if synced)",
+          "Contact-level campaign clicks (verify availability for the selected campaign)"
+        ],
+        "status": "Source verification needed"
+      },
+      {
+        "id": "shopify-clicks",
+        "title": "Engaged nonbuyers \u2192 campaign that answers purchase barriers",
+        "action": "campaign",
+        "focus": "clicks",
+        "goal": "Combine verified ActiveCampaign product-link clicks with Shopify purchase history to create a helpful campaign for interested contacts who have not bought the featured product.",
+        "description": "Turn demonstrated product interest into useful answers before another sales pitch.",
+        "why": "A product-link click shows interest, but it does not explain why someone has not purchased. This workflow helps you offer useful education to a relevant audience while checking for existing purchases and asking you to confirm the questions the campaign should answer.",
+        "data": "Selected ActiveCampaign campaign and product links, contact-level clicks with dates, matching product/variant IDs, purchase-history coverage, and approved answers.",
+        "instructions": "Confirm campaign IDs, product links and click/date scope. Require contact-level product-link click records; opens, aggregate click totals and product URLs alone cannot identify this audience. Join verified contact identities to purchase history, deduplicate and exclude purchasers. Treat missing/incomplete history as unknown, not nonbuyer. Ask for approved barrier themes or resources; a click does not prove an objection.",
+        "sourceTools": [
+          "Discover authorized Shopify merchant reads, or verify synced ecommerce data",
+          "list-all-orders / get-order / list-products-for-order (ActiveCampaign, if synced)",
+          "Contact-level campaign clicks (verify availability for the selected campaign)"
+        ],
+        "status": "Source verification needed"
+      }
+    ],
+    "gmail": [
+      {
+        "id": "gmail-1",
+        "title": "Customer email \u2192 new contact",
+        "action": "create",
+        "goal": "Create an ActiveCampaign contact from the external sender of a selected Gmail message.",
+        "description": "Use the actual From address, not quoted senders.",
+        "instructions": "Show the selected message, sender name, and address before creating a contact. Exclude my own account and automated no-reply senders.",
+        "sourceTools": [
+          "search_emails",
+          "read_email",
+          "read_email_thread"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "gmail-2",
+        "title": "Signature \u2192 contact update",
+        "action": "upsert",
+        "goal": "Update an ActiveCampaign contact using verified name and phone details in a selected Gmail signature.",
+        "description": "Use a current signature to refresh contact details.",
+        "instructions": "Verify the signature belongs to the external sender of the selected message, not a quoted participant. Preview fields and preserve values when missing.",
+        "sourceTools": [
+          "search_emails",
+          "read_email",
+          "read_email_thread"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "gmail-3",
+        "title": "Buying signal \u2192 interest tag",
+        "action": "tag",
+        "goal": "Apply an existing ActiveCampaign interest tag when a selected Gmail conversation contains a clear buying signal.",
+        "description": "Use a quoted, relevant signal as the tagging evidence.",
+        "instructions": "Show the exact relevant sentence and the proposed mapping to a tag. Do not treat sentiment or a vague mention as a verified buying intent.",
+        "sourceTools": [
+          "search_emails",
+          "read_email",
+          "read_email_thread"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "gmail-4",
+        "title": "Conversation \u2192 contact note",
+        "action": "note",
+        "goal": "Summarize a selected Gmail customer conversation as a note on the matching ActiveCampaign contact.",
+        "description": "Keep the important context with the contact.",
+        "instructions": "Read the relevant thread messages, include dated facts and message/thread provenance, omit private unrelated content, and distinguish customer statements from inference.",
+        "sourceTools": [
+          "search_emails",
+          "read_email",
+          "read_email_thread"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "gmail-5",
+        "title": "Explicit opt-in email \u2192 list subscriber",
+        "action": "subscribe",
+        "goal": "Subscribe an existing ActiveCampaign contact when a selected Gmail message explicitly asks to join my newsletter.",
+        "description": "Keep a dated source for the subscription request.",
+        "instructions": "Identify the sender\u2019s explicit request for the intended mailing list and retain its message ID/date. General correspondence or a signature does not establish consent.",
+        "sourceTools": [
+          "search_emails",
+          "read_email",
+          "read_email_thread"
+        ],
+        "status": "Tool-backed"
+      }
+    ],
+    "wix": [
+      {
+        "id": "wix-1",
+        "title": "Website form \u2192 new contact",
+        "action": "create",
+        "goal": "Create an ActiveCampaign contact from a selected Wix contact-form submission.",
+        "description": "Map the email and name from a real submission.",
+        "instructions": "Resolve the site, form namespace, form ID, and submission. Map answer target keys through the form schema; do not assume the field key is simply email.",
+        "sourceTools": [
+          "ListWixSites",
+          "GetSiteContext",
+          "SearchWixRESTDocumentation",
+          "SearchWixAPISpec",
+          "ExecuteWixAPI"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "wix-2",
+        "title": "Profile form \u2192 contact update",
+        "action": "upsert",
+        "goal": "Update an ActiveCampaign contact from a Wix profile form submission.",
+        "description": "Reuse existing fields for the submitted profile answers.",
+        "instructions": "Map approved profile answers into verified compatible ActiveCampaign field IDs. Preserve existing values when Wix answers are blank; request approval for any missing individual field creation.",
+        "sourceTools": [
+          "ListWixSites",
+          "GetSiteContext",
+          "SearchWixRESTDocumentation",
+          "SearchWixAPISpec",
+          "ExecuteWixAPI"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "wix-3",
+        "title": "Service interest \u2192 contact tag",
+        "action": "tag",
+        "goal": "Tag an existing ActiveCampaign contact from a service-interest answer in a Wix form submission.",
+        "description": "Keep service interest as an approved tag.",
+        "instructions": "Read the actual answer via the form schema and ask which existing tag represents that service. Filter supported metadata on the API and match answer values locally.",
+        "sourceTools": [
+          "ListWixSites",
+          "GetSiteContext",
+          "SearchWixRESTDocumentation",
+          "SearchWixAPISpec",
+          "ExecuteWixAPI"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "wix-4",
+        "title": "Newsletter form \u2192 list subscriber",
+        "action": "subscribe",
+        "goal": "Subscribe an existing ActiveCampaign contact using explicit consent from a selected Wix newsletter form response.",
+        "description": "Verify newsletter permission from the submitted answer.",
+        "instructions": "Read the exact consent question and response. Do not infer consent from the form name or the mere existence of a submission.",
+        "sourceTools": [
+          "ListWixSites",
+          "GetSiteContext",
+          "SearchWixRESTDocumentation",
+          "SearchWixAPISpec",
+          "ExecuteWixAPI"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "wix-5",
+        "title": "Booking questions \u2192 contact note",
+        "action": "note",
+        "goal": "Add the answers from one Wix booking form submission as an ActiveCampaign contact note.",
+        "description": "Keep preparation context alongside the contact.",
+        "instructions": "Verify Wix Bookings is installed and use the namespace returned by the actual form (documented Bookings namespace wix.bookings.v2.bookings). Read the selected form and submission; do not assume the ordinary contact-form namespace.",
+        "sourceTools": [
+          "ListWixSites",
+          "GetSiteContext",
+          "SearchWixRESTDocumentation",
+          "SearchWixAPISpec",
+          "ExecuteWixAPI"
+        ],
+        "status": "Tool-backed"
+      }
+    ],
+    "calendly": [
+      {
+        "id": "calendly-education",
+        "title": "Recurring booking questions \u2192 educational campaign",
+        "action": "campaign",
+        "focus": "questions",
+        "goal": "Analyze recurring questions in a chosen set of Calendly booking responses and generate an educational ActiveCampaign campaign for review.",
+        "description": "Answer the questions customers repeatedly ask before meetings.",
+        "why": "The questions people ask when they book reveal what they need help understanding. Turning those patterns into useful email content helps your team answer common concerns and gives future conversations a more informed starting point.",
+        "instructions": "Confirm the event type and booking date range, read actual invitee questionnaire responses, identify repeated questions without inventing answers, confirm the educational topic and intended audience, then generate one unsent campaign after approving the content request and required image/brand or template inputs.",
+        "sourceTools": [
+          "event_types-list_event_types",
+          "event_types-get_event_type",
+          "meetings-list_events",
+          "meetings-get_event",
+          "meetings-list_event_invitees",
+          "meetings-get_event_invitee"
+        ],
+        "status": "Documented tools"
+      },
+      {
+        "id": "calendly-objections",
+        "title": "Common objections \u2192 objection-handling campaign",
+        "action": "campaign",
+        "focus": "objections",
+        "goal": "Use concerns explicitly raised in selected Calendly booking responses to generate an ActiveCampaign objection-handling campaign for review.",
+        "description": "Address real concerns about price, implementation, or fit.",
+        "why": "A concern about price, setup, or fit can keep someone from taking the next step. This workflow helps you respond with clear, useful information grounded in what people actually asked, rather than guessing what is holding them back.",
+        "instructions": "Use only objections explicitly expressed in returned booking answers, not inferred sentiment. Confirm the theme and audience, verify product, pricing, or implementation answers against approved resources, and generate one unsent campaign. Do not invent objections, offers, customer claims, or answers.",
+        "sourceTools": [
+          "event_types-list_event_types",
+          "event_types-get_event_type",
+          "meetings-list_events",
+          "meetings-get_event",
+          "meetings-list_event_invitees",
+          "meetings-get_event_invitee"
+        ],
+        "status": "Documented tools"
+      },
+      {
+        "id": "calendly-nurture",
+        "title": "Appointment type \u2192 nurture automation",
+        "action": "automation",
+        "focus": "nurture",
+        "goal": "Use a selected Calendly appointment type to design a relevant ActiveCampaign nurture automation, or prepare enrollment into an approved existing automation.",
+        "description": "Continue the conversation with content suited to the appointment.",
+        "why": "Someone who books a product demo needs different follow-up from someone booking onboarding or a consultation. Using the appointment type as context helps you design a relevant next step and keep the conversation useful beyond the booking.",
+        "instructions": "Confirm the event type and intended audience, inspect existing automations for overlap, then choose an existing suitable automation or design one new nurture workflow. Preview content, waits, branching, exits, and trigger mapping. Save only after approval and only if inactive status can be verified; activation, enrollment, and future booking capture each require separately verified support and explicit approval. A booking does not establish marketing consent.",
+        "sourceTools": [
+          "event_types-list_event_types",
+          "event_types-get_event_type",
+          "meetings-list_events",
+          "meetings-get_event",
+          "meetings-list_event_invitees",
+          "meetings-get_event_invitee"
+        ],
+        "status": "Documented tools"
+      },
+      {
+        "id": "calendly-series",
+        "title": "Repeated knowledge gaps \u2192 educational email series",
+        "action": "series",
+        "focus": "series",
+        "goal": "Turn repeated knowledge gaps in selected Calendly booking responses into an educational email series and a proposed ActiveCampaign delivery automation.",
+        "description": "Teach a recurring topic through a useful sequence of lessons.",
+        "why": "Some topics need more than a single email to explain well. A short series lets you break a recurring customer question into useful lessons, helping people learn at a manageable pace while giving your team reusable content.",
+        "instructions": "Read a chosen set of actual booking answers, confirm the knowledge gap and intended audience, propose a short sequence with distinct lesson objectives and verified answers, then draft one delivery automation for review. Verify email assets and saving separately. Do not claim the series is saved, activated, or scheduled when only a content plan or schema has been drafted.",
+        "sourceTools": [
+          "event_types-list_event_types",
+          "event_types-get_event_type",
+          "meetings-list_events",
+          "meetings-get_event",
+          "meetings-list_event_invitees",
+          "meetings-get_event_invitee"
+        ],
+        "status": "Documented tools"
+      }
+    ],
+    "clay": [
+      {
+        "id": "clay-1",
+        "title": "Named prospect \u2192 new contact",
+        "action": "create",
+        "goal": "Find a named prospect at a specified company in Clay and create an approved ActiveCampaign contact.",
+        "description": "Search a named person and retrieve a real email.",
+        "instructions": "Use search_contacts_by_name with contactName and companyIdentifier, then get_task_context. If email enrichment is missing, ask before add_contact_data_points with Email and poll get_task_context. Transfer only the selected approved prospect.",
+        "sourceTools": [
+          "search_contacts_by_name",
+          "search_contacts",
+          "query_objects",
+          "add_contact_data_points",
+          "get_task_context"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "clay-2",
+        "title": "Target role \u2192 contact record",
+        "action": "upsert",
+        "goal": "Find a relevant person at a specified company in Clay and create or update an approved ActiveCampaign contact.",
+        "description": "Use a scoped role search and verified enrichment.",
+        "instructions": "Use search_contacts with companyIdentifiers and a valid people DSL. Ask me to select one result before enrichment or transfer. Read actual email values through get_task_context; do not import an entire prospecting result set.",
+        "sourceTools": [
+          "search_contacts_by_name",
+          "search_contacts",
+          "query_objects",
+          "add_contact_data_points",
+          "get_task_context"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "clay-3",
+        "title": "Audience segment \u2192 contact tag",
+        "action": "tag",
+        "goal": "Apply an existing ActiveCampaign tag to a matching contact selected from a Clay audience segment.",
+        "description": "Use the user\u2019s audience data, not a public prospect search.",
+        "instructions": "Use query_objects with the chosen audienceName and criteria. Confirm Audiences support for this workspace and use actual returned field values, especially email. Do not claim public search results belong to my saved audience.",
+        "sourceTools": [
+          "search_contacts_by_name",
+          "search_contacts",
+          "query_objects",
+          "add_contact_data_points",
+          "get_task_context"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "clay-4",
+        "title": "Research \u2192 contact note",
+        "action": "note",
+        "goal": "Use Clay research about one selected person to add a sourced note to their ActiveCampaign contact.",
+        "description": "Turn approved research into useful contact context.",
+        "instructions": "Start from a returned search taskId and entityId. Check get_task_context; only with approval call add_contact_data_points using an appropriate Custom question. Wait for completed results and include source links if returned; distinguish unverified enrichment from fact.",
+        "sourceTools": [
+          "search_contacts_by_name",
+          "search_contacts",
+          "query_objects",
+          "add_contact_data_points",
+          "get_task_context"
+        ],
+        "status": "Tool-backed"
+      },
+      {
+        "id": "clay-5",
+        "title": "Enrichment \u2192 contact fields",
+        "action": "upsert",
+        "goal": "Update an existing ActiveCampaign contact with approved Clay enrichment values.",
+        "description": "Map verified enrichment into compatible fields.",
+        "instructions": "Use an existing taskId and selected entityId, check get_task_context, and request approval before any new enrichment. Preview each value and its compatible existing ActiveCampaign custom field ID. Do not overwrite blanks or create field groups.",
+        "sourceTools": [
+          "search_contacts_by_name",
+          "search_contacts",
+          "query_objects",
+          "add_contact_data_points",
+          "get_task_context"
+        ],
+        "status": "Tool-backed"
+      }
+    ],
+    "forms": [
+      {
+        "id": "forms-1",
+        "title": "Response \u2192 new contact",
+        "action": "create",
+        "goal": "Create an ActiveCampaign contact from one Google Forms response in its linked Google Sheet.",
+        "description": "Use a verified response email through Google Sheets.",
+        "instructions": "Ask for the linked response Sheet, resolve the actual email question/column, and select one response by timestamp or row. Do not claim a direct Google Forms MCP read.",
+        "sourceTools": [
+          "get_spreadsheet_metadata",
+          "get_spreadsheet_range",
+          "search_spreadsheet_rows"
+        ],
+        "status": "Via Google Sheets"
+      },
+      {
+        "id": "forms-2",
+        "title": "Profile response \u2192 contact update",
+        "action": "upsert",
+        "goal": "Update an ActiveCampaign contact with profile answers from a Google Forms response Sheet.",
+        "description": "Map useful response columns into existing fields.",
+        "instructions": "Read the relevant response row and headers. Preview compatible field mappings, resolve actual custom field IDs, and preserve stored values when answers are blank.",
+        "sourceTools": [
+          "get_spreadsheet_metadata",
+          "get_spreadsheet_range",
+          "search_spreadsheet_rows"
+        ],
+        "status": "Via Google Sheets"
+      },
+      {
+        "id": "forms-3",
+        "title": "Interest response \u2192 contact tag",
+        "action": "tag",
+        "goal": "Tag an existing ActiveCampaign contact based on an interest answer in a Google Forms response Sheet.",
+        "description": "Use a returned interest answer and approved tag mapping.",
+        "instructions": "Identify the exact interest question/column and selected response. Ask me to approve the mapping to one existing tag.",
+        "sourceTools": [
+          "get_spreadsheet_metadata",
+          "get_spreadsheet_range",
+          "search_spreadsheet_rows"
+        ],
+        "status": "Via Google Sheets"
+      },
+      {
+        "id": "forms-4",
+        "title": "Explicit opt-in \u2192 list subscriber",
+        "action": "subscribe",
+        "goal": "Subscribe an existing ActiveCampaign contact using an explicit opt-in recorded in a Google Forms response Sheet.",
+        "description": "Check the exact consent question and answer.",
+        "instructions": "Read the consent question header, response, and timestamp; do not infer permission from an email field or a form title. Skip responses without valid consent.",
+        "sourceTools": [
+          "get_spreadsheet_metadata",
+          "get_spreadsheet_range",
+          "search_spreadsheet_rows"
+        ],
+        "status": "Via Google Sheets"
+      },
+      {
+        "id": "forms-5",
+        "title": "Survey feedback \u2192 contact note",
+        "action": "note",
+        "goal": "Add a note to an ActiveCampaign contact from feedback in a selected Google Forms response Sheet row.",
+        "description": "Keep relevant feedback beside the contact record.",
+        "instructions": "Read only the selected respondent\u2019s feedback and email. Include question text, timestamp, and Sheet/tab/row provenance; omit unrelated survey answers.",
+        "sourceTools": [
+          "get_spreadsheet_metadata",
+          "get_spreadsheet_range",
+          "search_spreadsheet_rows"
+        ],
+        "status": "Via Google Sheets"
+      }
+    ],
+    "canva": [
+      {
+        "id": "canva-import",
+        "title": "Canva email design \u2192 campaign draft",
+        "action": "import",
+        "focus": "import",
+        "goal": "Bring an existing Canva email design into ActiveCampaign as a draft campaign, preserving its content and design.",
+        "description": "Move a finished email into ActiveCampaign without rewriting it.",
+        "assets": "Complete exported email HTML, styles, and its image files.",
+        "why": "Your team has already invested time in an email design. Bringing it into ActiveCampaign as a draft lets you use that work for a real campaign without starting again or unintentionally changing the message.",
+        "instructions": "Verify that this is a Canva email with complete exportable HTML. Obtain the full HTML/styles and image files, verify durable hosted image URLs, preview the intended import, then use import_campaign_design with source_html. Poll the returned request to confirm a saved draft. Do not use generate_campaign to preserve an existing email because it may rewrite the copy.",
+        "sourceTools": [
+          "search_designs",
+          "get_design",
+          "get_design_pages",
+          "get_design_content"
+        ],
+        "status": "Export/upload may be needed"
+      },
+      {
+        "id": "canva-ebook",
+        "title": "Ebook \u2192 resource delivery and nurture",
+        "action": "series",
+        "focus": "ebook",
+        "goal": "Use my Canva ebook and selected visuals to create a resource-delivery email and a helpful ActiveCampaign follow-up series.",
+        "description": "Help readers access the resource and put it into practice.",
+        "assets": "Ebook PDF, cover image, selected graphics, and an approved hosted download link.",
+        "why": "A resource is more valuable when people actually use it. A delivery email makes it easy to find, while useful follow-up helps readers apply its ideas and take a relevant next step.",
+        "instructions": "Read the ebook text, obtain an exported PDF/cover/approved graphics through a verified export or explicit upload, and confirm a stable recipient-accessible download URL. Draft a delivery email and useful follow-ups; approve content and required generation inputs. Verify saved campaigns and, if requested, an inactive delivery automation. Do not assume that Canva exposes download or reading activity.",
+        "sourceTools": [
+          "search_designs",
+          "get_design",
+          "get_design_pages",
+          "get_design_content"
+        ],
+        "status": "Export/upload may be needed"
+      },
+      {
+        "id": "canva-presentation",
+        "title": "Presentation \u2192 educational email series",
+        "action": "series",
+        "focus": "presentation",
+        "goal": "Turn the visible content of my Canva presentation and selected slide visuals into an educational email series and a proposed ActiveCampaign delivery automation.",
+        "description": "Turn useful lessons into emails your audience can follow over time.",
+        "assets": "Selected slide text and exported visuals from approved pages.",
+        "why": "A presentation often contains more useful material than one meeting can cover. Turning its main lessons into a short email series gives that content a longer life and makes it easier for your audience to learn at their own pace.",
+        "instructions": "Read actual visible text from chosen pages; presenter notes are not returned by get_design_content, so ask for them separately if needed. Export or request approved slide visuals, host them durably, and adapt the content into readable email lessons rather than images of whole slides. Verify the email assets and proposed inactive automation separately.",
+        "sourceTools": [
+          "search_designs",
+          "get_design",
+          "get_design_pages",
+          "get_design_content"
+        ],
+        "status": "Export/upload may be needed"
+      },
+      {
+        "id": "canva-case-study",
+        "title": "Customer case study \u2192 targeted nurture",
+        "action": "campaign",
+        "focus": "case-study",
+        "goal": "Use my Canva customer case study and approved visuals to create a relevant ActiveCampaign campaign and an optional targeted nurture journey.",
+        "description": "Help the right audience see credible customer proof.",
+        "assets": "Case-study copy, approved quotes, customer results graphics, and a relevant CTA link.",
+        "why": "A relevant customer story can make a product\u2019s value easier to understand. This workflow turns approved customer proof into useful emails for people facing a similar problem, giving your team a credible way to build confidence.",
+        "instructions": "Read the actual case study and selected visuals. Preserve approved quote wording and verify numbers, time periods, permission, and context. Confirm the intended audience and CTA; do not invent results or claim that all contacts match that audience. Generate an unsent campaign after approval, then optionally propose an inactive nurture journey.",
+        "sourceTools": [
+          "search_designs",
+          "get_design",
+          "get_design_pages",
+          "get_design_content"
+        ],
+        "status": "Export/upload may be needed"
+      }
+    ]
+  },
+  "prompt_style": "Concise numbered task lists; required context, tool actions, approvals, and outcome verification."
+}
